@@ -1,0 +1,7 @@
+{
+  "services": [
+    {"name": "gateway", "language": "python", "replicas": 2},
+    {"name": "metrics", "language": "go", "replicas": 9},
+    {"name": "scheduler", "language": "python", "replicas": 5}
+  ]
+}

@@ -9,8 +9,10 @@
 **Build jq queries by navigating JSON.** `qbx` keeps a structured query model,
 translates it to visible jq, and runs it with an embedded Go interpreter.
 
-<!-- TODO: replace with a TUI demo recording (GIF or asciinema cast). -->
-> _Demo recording coming soon._
+![Qubex demo: build a jq query in the TUI, save it, and reuse it on another JSON file](docs/assets/demo.gif)
+
+[Watch the MP4 recording](docs/assets/demo.mp4). The demo uses
+`examples/services.json` and `examples/services-staging.json`.
 
 For short tutorials and references, start with the [documentation pages](docs/index.md).
 The [single-file user manual](USER_MANUAL.md) remains available.
