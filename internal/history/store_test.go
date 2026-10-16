@@ -53,7 +53,9 @@ func TestPreserveCorruptHistory(t *testing.T) {
 	for _, input := range []string{"{broken", `{"version":99}`, `{"version":1,"records":[{"id":1},{"id":1}]}`} {
 		s := Store{Dir: t.TempDir()}
 		p := filepath.Join(s.Dir, "history.json")
-		os.WriteFile(p, []byte(input), 0600)
+		if e := os.WriteFile(p, []byte(input), 0600); e != nil {
+			t.Fatal(e)
+		}
 		if _, e := s.Save("x", query.New(), "stdin"); e == nil {
 			t.Fatal("overwrote corrupt history")
 		}

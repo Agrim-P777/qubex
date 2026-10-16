@@ -19,7 +19,9 @@ func TestCLIHistoryAndRun(t *testing.T) {
 		t.Fatal(r, e)
 	}
 	p := filepath.Join(t.TempDir(), "input.json")
-	os.WriteFile(p, []byte(`[{"name":"api"},{"name":"worker"}]`), 0600)
+	if e := os.WriteFile(p, []byte(`[{"name":"api"},{"name":"worker"}]`), 0600); e != nil {
+		t.Fatal(e)
+	}
 	var out, err bytes.Buffer
 	code := Run([]string{"history", "run", "1", p}, os.Stdin, &out, &err, "test")
 	if code != 0 || out.String() != "\"api\"\n\"worker\"\n" {

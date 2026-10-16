@@ -48,7 +48,7 @@ func main() {
 	start := time.Now()
 	doc, e := data.Read(context.Background(), input, "synthetic", int64(*size+1)<<20, nil)
 	if e != nil {
-		fmt.Fprintln(os.Stderr, e)
+		_, _ = fmt.Fprintln(os.Stderr, e)
 		os.Exit(1)
 	}
 	tr := tree.New([]any{doc.Value}, false)
@@ -63,11 +63,17 @@ func main() {
 	}
 	sort.Slice(times, func(i, j int) bool { return times[i] < times[j] })
 	var ru syscall.Rusage
-	syscall.Getrusage(syscall.RUSAGE_SELF, &ru)
+	if e := syscall.Getrusage(syscall.RUSAGE_SELF, &ru); e != nil {
+		_, _ = fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
 	rss := ru.Maxrss
 	if runtime.GOOS == "linux" {
 		rss *= 1024
 	}
-	json.NewEncoder(os.Stdout).Encode(map[string]any{"os": runtime.GOOS, "arch": runtime.GOARCH, "go": runtime.Version(), "cpus": runtime.NumCPU(), "input_bytes": doc.Bytes, "records": count + 1, "load_and_first_rows_ms": float64(load) / float64(time.Millisecond), "navigation_p95_ms": float64(times[949]) / 1e6, "peak_rss_mib": float64(rss) / (1 << 20)})
+	if e := json.NewEncoder(os.Stdout).Encode(map[string]any{"os": runtime.GOOS, "arch": runtime.GOARCH, "go": runtime.Version(), "cpus": runtime.NumCPU(), "input_bytes": doc.Bytes, "records": count + 1, "load_and_first_rows_ms": float64(load) / float64(time.Millisecond), "navigation_p95_ms": float64(times[949]) / 1e6, "peak_rss_mib": float64(rss) / (1 << 20)}); e != nil {
+		_, _ = fmt.Fprintln(os.Stderr, e)
+		os.Exit(1)
+	}
 	runtime.KeepAlive(doc)
 }

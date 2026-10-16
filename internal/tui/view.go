@@ -18,7 +18,6 @@ var (
 	muted      = lipgloss.NewStyle().Foreground(lipgloss.Color("#8794a8"))
 	selected   = lipgloss.NewStyle().Foreground(lipgloss.Color("#ecffff")).Background(lipgloss.Color("#234552"))
 	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#ffb1a9"))
-	bold       = lipgloss.NewStyle().Bold(true)
 	treeKey    = lipgloss.NewStyle().Foreground(lipgloss.Color("#6840a5"))
 	treeString = lipgloss.NewStyle().Foreground(lipgloss.Color("#8bdc9a"))
 	treeBool   = lipgloss.NewStyle().Foreground(lipgloss.Color("#e9a1dc"))

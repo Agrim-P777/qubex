@@ -194,16 +194,23 @@ func parseBytes(s string) (int64, error) {
 }
 func Run(args []string, stdin *os.File, stdout, stderr io.Writer, version string) int {
 	o, e := parse(args)
-	fail := func(code int, e error) int { fmt.Fprintln(stderr, "qbx:", e); return code }
+	fail := func(code int, e error) int {
+		_, _ = fmt.Fprintln(stderr, "qbx:", e) // Reporting a write failure cannot repair it.
+		return code
+	}
 	if e != nil {
 		return fail(2, e)
 	}
 	if o.help {
-		fmt.Fprint(stdout, Usage)
+		if _, e := fmt.Fprint(stdout, Usage); e != nil {
+			return fail(4, e)
+		}
 		return 0
 	}
 	if o.version {
-		fmt.Fprintln(stdout, "Qubex", version)
+		if _, e := fmt.Fprintln(stdout, "Qubex", version); e != nil {
+			return fail(4, e)
+		}
 		return 0
 	}
 	store := history.Store{Dir: history.DefaultDir()}
@@ -301,12 +308,17 @@ func Run(args []string, stdin *os.File, stdout, stderr io.Writer, version string
 			if e != nil {
 				return fail(4, fmt.Errorf("clipboard needs a terminal; use history export %d --format jq", id))
 			}
-			defer f.Close()
 			_, e = fmt.Fprintf(f, "\x1b]52;c;%s\x07", base64.StdEncoding.EncodeToString([]byte(r.JQ)))
 			if e != nil {
+				_ = f.Close()
 				return fail(4, e)
 			}
-			fmt.Fprintln(stderr, "Clipboard write requested; terminal support is required.")
+			if e := f.Close(); e != nil {
+				return fail(4, e)
+			}
+			if _, e := fmt.Fprintln(stderr, "Clipboard write requested; terminal support is required."); e != nil {
+				return 4
+			}
 			return 0
 		case "open", "run":
 			if len(a) > 3 {
@@ -330,7 +342,7 @@ func Run(args []string, stdin *os.File, stdout, stderr io.Writer, version string
 		if e != nil {
 			return fail(2, e)
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }() // Input files are read only.
 		reader = f
 		source = filepath.Base(o.args[0])
 	} else {
@@ -378,8 +390,8 @@ func Run(args []string, stdin *os.File, stdout, stderr io.Writer, version string
 	if e != nil {
 		return fail(2, fmt.Errorf("interactive mode needs a controlling terminal; use history run for scripts: %w", e))
 	}
-	defer in.Close()
-	defer out.Close()
+	defer func() { _ = in.Close() }()
+	defer func() { _ = out.Close() }()
 	m := tui.New(tui.Options{Reader: reader, Source: source, InputLimit: o.inputLimit, Limits: o.limits, Store: store, Query: q, Keys: o.keys})
 	defer m.Close()
 	signalContext, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

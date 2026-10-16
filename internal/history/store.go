@@ -3,6 +3,7 @@ package history
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/Agrim-P777/qubex/internal/compiler"
 	"github.com/Agrim-P777/qubex/internal/query"
@@ -38,7 +39,7 @@ func DefaultDir() string {
 	h, _ := os.UserHomeDir()
 	return filepath.Join(h, ".config", "qubex")
 }
-func (s Store) transact(write bool, fn func(*file) error) error {
+func (s Store) transact(write bool, fn func(*file) error) (retErr error) {
 	if e := os.MkdirAll(s.Dir, 0700); e != nil {
 		return e
 	}
@@ -46,11 +47,11 @@ func (s Store) transact(write bool, fn func(*file) error) error {
 	if e != nil {
 		return e
 	}
-	defer lock.Close()
+	defer func() { retErr = errors.Join(retErr, lock.Close()) }()
 	if e = syscall.Flock(int(lock.Fd()), syscall.LOCK_EX); e != nil {
 		return e
 	}
-	defer syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)
+	defer func() { retErr = errors.Join(retErr, syscall.Flock(int(lock.Fd()), syscall.LOCK_UN)) }()
 	f := file{Version: 1, NextID: 1, Records: []Record{}}
 	p := filepath.Join(s.Dir, "history.json")
 	b, e := os.ReadFile(p)
@@ -96,13 +97,17 @@ func (s Store) transact(write bool, fn func(*file) error) error {
 		return e
 	}
 	name := tmp.Name()
-	defer os.Remove(name)
+	defer func() {
+		if e := os.Remove(name); e != nil && !os.IsNotExist(e) {
+			retErr = errors.Join(retErr, e)
+		}
+	}()
 	if _, e = tmp.Write(b); e != nil {
-		tmp.Close()
+		_ = tmp.Close() // Preserve the write failure as the primary error.
 		return e
 	}
 	if e = tmp.Sync(); e != nil {
-		tmp.Close()
+		_ = tmp.Close() // Preserve the sync failure as the primary error.
 		return e
 	}
 	if e = tmp.Close(); e != nil {
@@ -112,11 +117,12 @@ func (s Store) transact(write bool, fn func(*file) error) error {
 		return e
 	}
 	dir, e := os.Open(s.Dir)
-	if e == nil {
-		e = dir.Sync()
-		dir.Close()
+	if e != nil {
+		return e
 	}
-	return e
+	syncErr := dir.Sync()
+	closeErr := dir.Close()
+	return errors.Join(syncErr, closeErr)
 }
 func (s Store) List() ([]Record, error) {
 	var r []Record

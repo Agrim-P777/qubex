@@ -37,7 +37,9 @@ func run(t *testing.T, input string, ops ...query.Operation) any {
 	}
 	b, _ := json.Marshal(r.Values)
 	var values any
-	json.Unmarshal(b, &values)
+	if e := json.Unmarshal(b, &values); e != nil {
+		t.Fatal(e)
+	}
 	if bin, e := exec.LookPath("jq"); e == nil {
 		cmd := exec.Command(bin, "-c", c.Text)
 		cmd.Stdin = strings.NewReader(input)
@@ -56,7 +58,9 @@ func run(t *testing.T, input string, ops ...query.Operation) any {
 		}
 		b, _ = json.Marshal(expected)
 		var normalized any
-		json.Unmarshal(b, &normalized)
+		if e := json.Unmarshal(b, &normalized); e != nil {
+			t.Fatal(e)
+		}
 		if !reflect.DeepEqual(values, normalized) {
 			t.Fatalf("gojq/jq difference for %s: %v != %v", c.Text, values, normalized)
 		}
