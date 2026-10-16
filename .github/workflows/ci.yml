@@ -21,9 +21,9 @@ jobs:
             echo "These files are not gofmt-clean:"; echo "$unformatted"; exit 1
           fi
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.13.1
       - name: Install verified jq 1.8.1 reference
         shell: bash
         run: |
