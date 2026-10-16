@@ -1,0 +1,22 @@
+{
+  "projects": [
+    {
+      "name": "api",
+      "tags": ["prod", "urgent"],
+      "tasks": [
+        {"status": "done", "hours": 3},
+        {"status": "todo", "hours": 5}
+      ]
+    },
+    {
+      "name": "demo",
+      "tags": ["dev"],
+      "tasks": [{"status": "done", "hours": 2}]
+    },
+    {
+      "name": "empty",
+      "tags": [],
+      "tasks": []
+    }
+  ]
+}

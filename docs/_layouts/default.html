@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ page.summary | default: site.description | escape }}">
+    <title>{{ page.title | escape }} · Qubex</title>
+    <link rel="stylesheet" href="assets/style.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="mark">Q</span> Qubex <span class="brand-sub">docs</span></a>
+      <span class="tagline">Build jq by navigating JSON</span>
+    </header>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-heading">Guide</div>
+        <nav aria-label="Documentation pages">
+          {% assign guides = site.pages | where_exp: "item", "item.nav_order != nil" | sort: "nav_order" %}
+          {% for item in guides %}
+            {% assign href = item.url | remove_first: "/" %}
+            <a href="{{ href }}" {% if item.url == page.url %}aria-current="page"{% endif %}>
+              <span class="nav-index">{{ item.nav_order }}</span>
+              <span>{{ item.nav_title | default: item.title | escape }}</span>
+            </a>
+          {% endfor %}
+        </nav>
+      </aside>
+      <main id="content" class="content">
+        <p class="eyebrow">{{ page.section | default: "Guide" | escape }} <span>·</span> {{ page.read_time | default: "5 min read" }}</p>
+        {{ content }}
+        <footer class="page-footer">
+          <a href="index.html">All pages</a>
+          {% if site.github.repository_url %}
+          <a href="{{ site.github.repository_url }}">Source repository</a>
+          {% endif %}
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+title: Qubex documentation
+description: Build and reuse jq queries by navigating JSON
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: false
+exclude:
+  - README.md

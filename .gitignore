@@ -1,0 +1,12 @@
+.tools/
+.cache/
+bin/
+dist/
+*.test
+.DS_Store
+__pycache__/
+*.pyc
+
+# Internal planning docs — kept locally, excluded from the public repo
+interactive-query-builder-spec.md
+docs_project/

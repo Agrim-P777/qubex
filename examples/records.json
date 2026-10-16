@@ -1,0 +1,29 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "name": " api ",
+      "score": 3,
+      "note": "Fast API",
+      "tags": ["prod", "blue"],
+      "owner": {"display name": "Ada"},
+      "discount": null
+    },
+    {
+      "id": 2,
+      "name": " worker ",
+      "score": 8,
+      "note": "Batch worker",
+      "tags": ["prod"],
+      "owner": {"display name": "Ben"}
+    },
+    {
+      "id": 3,
+      "name": " web ",
+      "score": "n/a",
+      "note": null,
+      "tags": [],
+      "owner": {"display name": "Cy"}
+    }
+  ]
+}

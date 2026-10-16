@@ -1,0 +1,55 @@
+name: Qubex checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.8'
+      - name: Check formatting
+        shell: bash
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not gofmt-clean:"; echo "$unformatted"; exit 1
+          fi
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+      - name: Install verified jq 1.8.1 reference
+        shell: bash
+        run: |
+          mkdir -p .tools
+          case "$(uname -s)-$(uname -m)" in
+            Linux-x86_64) asset=jq-linux-amd64 ;;
+            Linux-aarch64) asset=jq-linux-arm64 ;;
+            Darwin-arm64) asset=jq-macos-arm64 ;;
+            Darwin-x86_64) asset=jq-macos-amd64 ;;
+          esac
+          curl -fsSL "https://github.com/jqlang/jq/releases/download/jq-1.8.1/$asset" -o ".tools/$asset"
+          curl -fsSL https://github.com/jqlang/jq/releases/download/jq-1.8.1/sha256sum.txt -o .tools/jq-sha256.txt
+          ASSET="$asset" python3 - <<'PY'
+          import hashlib, os, pathlib
+          asset=os.environ['ASSET']
+          expected=[line.split()[0] for line in pathlib.Path('.tools/jq-sha256.txt').read_text().splitlines() if line.split()[-1]==asset][0]
+          assert hashlib.sha256(pathlib.Path('.tools',asset).read_bytes()).hexdigest()==expected
+          PY
+          mv ".tools/$asset" .tools/jq
+          chmod +x .tools/jq
+      - run: make check
+        env:
+          QBX_REQUIRE_JQ: '1'
+      - run: make pty
+      - run: make release VERSION=${{ github.sha }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qubex-${{ matrix.os }}
+          path: dist/

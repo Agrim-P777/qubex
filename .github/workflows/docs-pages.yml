@@ -1,0 +1,63 @@
+name: Qubex documentation
+
+"on":
+  push:
+    paths:
+      - "docs/**"
+      - "examples/**"
+      - ".github/workflows/docs-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Set Pages base path
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: |
+          printf '\nbaseurl: "%s"\n' "$BASE_PATH" >> docs/_config.yml
+      - name: Include tutorial JSON
+        run: cp -R examples docs/examples
+      - name: Build Jekyll site
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+      - name: Check built pages
+        run: |
+          test -s _site/index.html
+          test -s _site/02-first-query.html
+          test -s _site/examples/services.json
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,7 @@
+{
+  "services": [
+    {"name": "api", "language": "python", "replicas": 3},
+    {"name": "worker", "language": "python", "replicas": 8},
+    {"name": "web", "language": "go", "replicas": 2}
+  ]
+}

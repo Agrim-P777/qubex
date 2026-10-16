@@ -1,0 +1,572 @@
+{
+  "organization": {
+    "id": "org_7f3a91",
+    "name": "Asterion Systems",
+    "active": true,
+    "metadata": {
+      "created": "2026-01-17T08:31:22Z",
+      "tags": [
+        "deep-tech",
+        "distributed-systems",
+        "research"
+      ],
+      "owners": [
+        {
+          "id": "usr_001",
+          "name": "Mira Chen",
+          "roles": [
+            "founder",
+            "admin"
+          ],
+          "contacts": {
+            "email": "mira@example.com",
+            "social": {
+              "x": "@mirachen",
+              "github": "mirachen"
+            }
+          }
+        },
+        {
+          "id": "usr_002",
+          "name": "Arun Rao",
+          "roles": [
+            "engineer",
+            "maintainer"
+          ],
+          "contacts": {
+            "email": "arun@example.com",
+            "social": {
+              "github": "arunrao",
+              "website": "https://example.com/arun"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "projects": [
+    {
+      "id": "proj_alpha",
+      "name": "Nebula",
+      "status": "active",
+      "budget": {
+        "currency": "USD",
+        "allocated": 480000,
+        "spent": 317842.55,
+        "forecast": {
+          "q3": 91000,
+          "q4": 127500,
+          "confidence": 0.87
+        }
+      },
+      "teams": [
+        {
+          "name": "core",
+          "members": [
+            "usr_001",
+            "usr_002"
+          ],
+          "skills": {
+            "distributed_systems": 9,
+            "python": 10,
+            "rust": 8,
+            "databases": 7
+          }
+        },
+        {
+          "name": "platform",
+          "members": [
+            "usr_003",
+            "usr_004"
+          ],
+          "skills": {
+            "kubernetes": 9,
+            "terraform": 8,
+            "observability": 10,
+            "go": 8
+          }
+        }
+      ],
+      "services": {
+        "api": {
+          "language": "rust",
+          "replicas": 12,
+          "endpoints": [
+            {
+              "path": "/v1/projects",
+              "methods": [
+                "GET",
+                "POST"
+              ],
+              "auth": {
+                "required": true,
+                "scopes": [
+                  "projects:read",
+                  "projects:write"
+                ]
+              }
+            },
+            {
+              "path": "/v1/projects/{id}",
+              "methods": [
+                "GET",
+                "PATCH",
+                "DELETE"
+              ],
+              "auth": {
+                "required": true,
+                "scopes": [
+                  "projects:read",
+                  "projects:write",
+                  "projects:delete"
+                ]
+              }
+            }
+          ]
+        },
+        "worker": {
+          "language": "python",
+          "queues": [
+            {
+              "name": "high-priority",
+              "concurrency": 24,
+              "retry_policy": {
+                "max_attempts": 7,
+                "backoff": {
+                  "type": "exponential",
+                  "initial_seconds": 2,
+                  "max_seconds": 300,
+                  "jitter": true
+                }
+              }
+            },
+            {
+              "name": "bulk",
+              "concurrency": 8,
+              "retry_policy": {
+                "max_attempts": 3,
+                "backoff": {
+                  "type": "linear",
+                  "initial_seconds": 30,
+                  "max_seconds": 120,
+                  "jitter": false
+                }
+              }
+            }
+          ]
+        }
+      },
+      "deployments": [
+        {
+          "environment": "production",
+          "region": "ap-south-1",
+          "version": "3.14.2",
+          "instances": [
+            {
+              "id": "i-001",
+              "health": "healthy",
+              "metrics": {
+                "cpu": {
+                  "p50": 31.2,
+                  "p95": 67.8,
+                  "p99": 81.4
+                },
+                "memory": {
+                  "p50": 48.1,
+                  "p95": 72.4,
+                  "p99": 84.7
+                },
+                "latency_ms": {
+                  "p50": 14,
+                  "p95": 49,
+                  "p99": 103
+                }
+              }
+            },
+            {
+              "id": "i-002",
+              "health": "degraded",
+              "metrics": {
+                "cpu": {
+                  "p50": 44.7,
+                  "p95": 78.9,
+                  "p99": 93.2
+                },
+                "memory": {
+                  "p50": 61.2,
+                  "p95": 83.5,
+                  "p99": 94.1
+                },
+                "latency_ms": {
+                  "p50": 19,
+                  "p95": 81,
+                  "p99": 211
+                }
+              },
+              "alerts": [
+                {
+                  "severity": "warning",
+                  "code": "HIGH_CPU",
+                  "acknowledged": false
+                },
+                {
+                  "severity": "critical",
+                  "code": "LATENCY_SPIKE",
+                  "acknowledged": true
+                }
+              ]
+            }
+          ],
+          "feature_flags": {
+            "new_scheduler": {
+              "enabled": true,
+              "rollout": {
+                "percentage": 35,
+                "segments": [
+                  "internal",
+                  "beta"
+                ]
+              }
+            },
+            "experimental_cache": {
+              "enabled": false,
+              "rollout": {
+                "percentage": 0,
+                "segments": []
+              }
+            }
+          }
+        }
+      ],
+      "dependencies": [
+        {
+          "name": "event-stream",
+          "type": "internal",
+          "version": "2.8.0",
+          "critical": true,
+          "consumers": [
+            {
+              "service": "api",
+              "topics": [
+                "project.created",
+                "project.updated"
+              ]
+            },
+            {
+              "service": "worker",
+              "topics": [
+                "project.deleted",
+                "project.reindexed"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "vector-db",
+          "type": "external",
+          "version": "5.2",
+          "critical": false,
+          "config": {
+            "index": {
+              "dimensions": 1536,
+              "metric": "cosine",
+              "shards": 12,
+              "replicas": 3
+            },
+            "timeouts": {
+              "connect_ms": 500,
+              "read_ms": 2500,
+              "write_ms": 5000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "proj_beta",
+      "name": "Orion",
+      "status": "paused",
+      "budget": {
+        "currency": "EUR",
+        "allocated": 210000,
+        "spent": 198421.17,
+        "forecast": {
+          "q3": 12000,
+          "q4": 0,
+          "confidence": 0.61
+        }
+      },
+      "experiments": [
+        {
+          "id": "exp_101",
+          "hypothesis": "Batching reduces inference cost without materially increasing latency.",
+          "status": "completed",
+          "variants": [
+            {
+              "name": "control",
+              "traffic": 0.5,
+              "results": {
+                "cost_per_request": 0.021,
+                "p95_latency_ms": 412,
+                "error_rate": 0.004
+              }
+            },
+            {
+              "name": "batched",
+              "traffic": 0.5,
+              "results": {
+                "cost_per_request": 0.013,
+                "p95_latency_ms": 438,
+                "error_rate": 0.005
+              }
+            }
+          ]
+        },
+        {
+          "id": "exp_102",
+          "hypothesis": "Adaptive caching improves throughput under bursty traffic.",
+          "status": "running",
+          "variants": [
+            {
+              "name": "control",
+              "traffic": 0.33,
+              "results": {
+                "throughput_rps": 842,
+                "cache_hit_rate": null
+              }
+            },
+            {
+              "name": "adaptive",
+              "traffic": 0.34,
+              "results": {
+                "throughput_rps": 1197,
+                "cache_hit_rate": 0.71
+              }
+            },
+            {
+              "name": "aggressive",
+              "traffic": 0.33,
+              "results": {
+                "throughput_rps": 1284,
+                "cache_hit_rate": 0.89
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "infrastructure": {
+    "clouds": [
+      {
+        "provider": "aws",
+        "accounts": [
+          {
+            "id": "acct-prod",
+            "regions": {
+              "ap-south-1": {
+                "clusters": [
+                  {
+                    "name": "nebula-prod",
+                    "nodes": [
+                      {
+                        "type": "compute-optimized",
+                        "count": 18,
+                        "autoscaling": {
+                          "min": 12,
+                          "max": 36,
+                          "target_cpu": 68
+                        },
+                        "labels": {
+                          "workload": "api",
+                          "tier": "production",
+                          "zones": [
+                            "ap-south-1a",
+                            "ap-south-1b",
+                            "ap-south-1c"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "memory-optimized",
+                        "count": 9,
+                        "autoscaling": {
+                          "min": 6,
+                          "max": 18,
+                          "target_cpu": 55
+                        },
+                        "labels": {
+                          "workload": "worker",
+                          "tier": "production",
+                          "zones": [
+                            "ap-south-1a",
+                            "ap-south-1b"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "observability": {
+    "dashboards": [
+      {
+        "name": "production-overview",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "query": {
+              "language": "promql",
+              "expression": "sum(rate(http_requests_total[5m])) by (service)"
+            },
+            "thresholds": [
+              {
+                "op": ">",
+                "value": 5000,
+                "severity": "warning"
+              }
+            ]
+          },
+          {
+            "title": "Error Budget",
+            "query": {
+              "language": "promql",
+              "expression": "1 - (sum(rate(http_errors_total[1h])) / sum(rate(http_requests_total[1h])))"
+            },
+            "thresholds": [
+              {
+                "op": "<",
+                "value": 0.999,
+                "severity": "warning"
+              },
+              {
+                "op": "<",
+                "value": 0.995,
+                "severity": "critical"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "alerts": [
+      {
+        "name": "latency-regression",
+        "condition": {
+          "all": [
+            {
+              "metric": "p99_latency_ms",
+              "operator": ">",
+              "value": 200
+            },
+            {
+              "metric": "request_rate",
+              "operator": ">",
+              "value": 100
+            }
+          ]
+        },
+        "actions": {
+          "on_firing": [
+            {
+              "type": "slack",
+              "channel": "#incidents"
+            },
+            {
+              "type": "pagerduty",
+              "service": "platform"
+            }
+          ],
+          "on_resolved": [
+            {
+              "type": "slack",
+              "channel": "#incidents"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "knowledge_graph": {
+    "nodes": [
+      {
+        "id": "concept_001",
+        "label": "Distributed Systems",
+        "type": "domain"
+      },
+      {
+        "id": "concept_002",
+        "label": "Consensus",
+        "type": "concept"
+      },
+      {
+        "id": "concept_003",
+        "label": "Raft",
+        "type": "algorithm"
+      },
+      {
+        "id": "concept_004",
+        "label": "Leader Election",
+        "type": "mechanism"
+      },
+      {
+        "id": "concept_005",
+        "label": "Log Replication",
+        "type": "mechanism"
+      }
+    ],
+    "edges": [
+      {
+        "from": "concept_001",
+        "to": "concept_002",
+        "relationship": "contains",
+        "weight": 1.0,
+        "evidence": [
+          {
+            "source": "book",
+            "title": "Designing Data-Intensive Applications",
+            "confidence": 0.98
+          },
+          {
+            "source": "paper",
+            "title": "In Search of an Understandable Consensus Algorithm",
+            "confidence": 0.99
+          }
+        ]
+      },
+      {
+        "from": "concept_002",
+        "to": "concept_003",
+        "relationship": "implemented_by",
+        "weight": 0.94,
+        "evidence": [
+          {
+            "source": "paper",
+            "title": "In Search of an Understandable Consensus Algorithm",
+            "confidence": 0.99
+          }
+        ]
+      },
+      {
+        "from": "concept_003",
+        "to": "concept_004",
+        "relationship": "uses",
+        "weight": 0.91,
+        "evidence": []
+      },
+      {
+        "from": "concept_003",
+        "to": "concept_005",
+        "relationship": "uses",
+        "weight": 0.96,
+        "evidence": []
+      }
+    ]
+  }
+}
