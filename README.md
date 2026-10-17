@@ -19,8 +19,18 @@ The [single-file user manual](USER_MANUAL.md) remains available.
 
 ## Install
 
-Download a prebuilt binary for your platform from the
-[releases page](https://github.com/Agrim-P777/qubex/releases), or install with Go:
+Once the public release and tap are published, install with Homebrew:
+
+```sh
+brew tap Agrim-P777/tap
+brew trust --formula Agrim-P777/tap/qbx
+brew install Agrim-P777/tap/qbx
+qbx --version
+```
+
+The tap is distributed separately from this repository. Until it is published,
+download a prebuilt binary from the
+[releases page](https://github.com/Agrim-P777/qubex/releases) or install with Go:
 
 ```sh
 go install github.com/Agrim-P777/qubex/cmd/qbx@latest
@@ -49,8 +59,11 @@ make test                       # semantic, execution, persistence and UI tests
 QBX_REQUIRE_JQ=1 make check      # vet, race detector and jq differential tests
 make pty                        # real terminal smoke tests (Python 3)
 make bench                      # 5/50/500 MiB profiling
-make release VERSION=0.1.0       # four CGO-free binaries, checksums and notices
+make release VERSION=0.1.0       # four CGO-free binaries, archives and checksums
 ```
+
+Release maintainers: see [RELEASING.md](RELEASING.md) for tagging and publishing
+the Homebrew formula.
 
 The differential tests use `jq` from PATH; CI installs verified jq 1.8.1.
 Setting `QBX_REQUIRE_JQ=1` makes a missing reference executable a test failure.

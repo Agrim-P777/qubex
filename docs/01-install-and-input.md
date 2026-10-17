@@ -5,13 +5,26 @@ nav_title: Install and input
 nav_order: 1
 section: Getting started
 read_time: 5 min read
-summary: Build Qubex, load one JSON document from a file or pipe, and learn what the CLI expects.
+summary: Install Qubex, load one JSON document from a file or pipe, and learn what the CLI expects.
 permalink: /01-install-and-input.html
 ---
 
 # Install and open JSON
 
-This page uses **`examples/services.json`** throughout. Qubex supports macOS and Linux on amd64 and arm64. The repository pins Go 1.26.8 and its dependencies; building the binary does not require an installed `jq`.
+This page uses **`examples/services.json`** throughout. Qubex supports macOS and Linux on amd64 and arm64. The binary does not require an installed `jq`.
+
+## Install a release
+
+Once the public release and Homebrew tap are available, install with:
+
+```sh
+brew tap Agrim-P777/tap
+brew trust --formula Agrim-P777/tap/qbx
+brew install Agrim-P777/tap/qbx
+qbx --version
+```
+
+Or download your platform's archive from the [GitHub Releases page](https://github.com/Agrim-P777/qubex/releases), extract it, and put `qbx` on your `PATH`. The release archives contain the license and third-party notices. Until the first release is published, build from source as below.
 
 ## Build from the repository
 

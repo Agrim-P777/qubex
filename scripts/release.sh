@@ -9,10 +9,4 @@ for target_os in darwin linux; do
     CGO_ENABLED=0 GOOS="$target_os" GOARCH="$target_arch" go build -trimpath -ldflags "-s -w -X main.version=$VERSION" -o "$artifact" ./cmd/qbx
   done
 done
-python3 - <<'PY'
-import hashlib, pathlib
-root=pathlib.Path('dist')
-with (root/'SHA256SUMS').open('w') as f:
-    for p in sorted(root.glob('qbx-*')):
-        f.write(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n')
-PY
+python3 scripts/package_release.py "$VERSION"
